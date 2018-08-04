@@ -3,6 +3,7 @@ package photobasics.view;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
+import java.awt.image.RescaleOp;
 import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.FileInputStream;
@@ -140,9 +141,7 @@ public class MainWindow extends javax.swing.JFrame {
             .addComponent(photoLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 343, Short.MAX_VALUE)
         );
 
-        jSlider1.setMaximum(10);
-        jSlider1.setMinimum(-10);
-        jSlider1.setValue(0);
+        jSlider1.setValue(50);
         jSlider1.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 jSlider1StateChanged(evt);
@@ -319,7 +318,7 @@ public class MainWindow extends javax.swing.JFrame {
                 .addComponent(jLabel3)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jSlider1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(20, Short.MAX_VALUE))
             .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(jPanel1Layout.createSequentialGroup()
                     .addGap(48, 48, 48)
@@ -389,7 +388,7 @@ public class MainWindow extends javax.swing.JFrame {
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             file = fc.getSelectedFile();
             try {
-                photoLabel.setIcon(new ImageIcon(new ImageIcon(ImageIO.read(file)).getImage().getScaledInstance(photoLabel.getWidth(), photoLabel.getHeight(), photoLabel.getWidth())));
+                photoLabel.setIcon(new ImageIcon(new ImageIcon(ImageIO.read(file)).getImage().getScaledInstance(photoLabel.getWidth()-10, photoLabel.getHeight()-10, 1)));
                 originalImage = ImageIO.read(file);
                 currentImage = originalImage;
                 imageArray.add(originalImage);
@@ -440,7 +439,7 @@ public class MainWindow extends javax.swing.JFrame {
     private void undo() {
         if (imageArray.indexOf(currentImage) > 0) {
             currentImage = imageArray.get(imageArray.indexOf(currentImage) - 1);
-            photoLabel1.setIcon(new ImageIcon(new ImageIcon(currentImage).getImage().getScaledInstance(photoLabel1.getWidth(), photoLabel1.getHeight(), 1)));
+            photoLabel1.setIcon(new ImageIcon(new ImageIcon(currentImage).getImage().getScaledInstance(photoLabel1.getWidth()-10, photoLabel1.getHeight()-10, 1)));
             photoPanel.revalidate();
             photoLabel1.repaint();
         }
@@ -450,14 +449,32 @@ public class MainWindow extends javax.swing.JFrame {
     private void redo() {
         if (imageArray.indexOf(currentImage) < imageArray.size() - 1) {
             currentImage = imageArray.get(imageArray.indexOf(currentImage) + 1);
-            photoLabel1.setIcon(new ImageIcon(new ImageIcon(currentImage).getImage().getScaledInstance(photoLabel1.getWidth(), photoLabel1.getHeight(), 1)));
+            photoLabel1.setIcon(new ImageIcon(new ImageIcon(currentImage).getImage().getScaledInstance(photoLabel1.getWidth()-10, photoLabel1.getHeight()-10, 1)));
             photoPanel.revalidate();
             photoLabel1.repaint();
         }
 
     }
     private void jSlider1StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jSlider1StateChanged
+        float factor = 0;
+        float contrast_val = jSlider1.getValue();
+        if (contrast_val - 50 > 0) {
+            float diff = contrast_val - 50;
+            factor = (diff + 100) / 100;
+//            System.out.println("upper");
 
+        } else if (contrast_val - 50 < 0) {
+            float diff = 50 - contrast_val;
+            factor = (100 - diff) / 100;
+        }
+//        System.out.println("method"+contrast_val);
+        if (factor != 0) {
+            currentImage = contrast(currentImage, factor);
+            imageArray.add(currentImage);
+            photoLabel1.setIcon(new ImageIcon(new ImageIcon(currentImage).getImage().getScaledInstance(photoLabel1.getWidth() - 10, photoLabel1.getHeight() - 10, 1)));
+//            photoPanel.revalidate();
+//            photoLabel1.repaint();
+        }
     }//GEN-LAST:event_jSlider1StateChanged
 
     private void undoBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_undoBtnActionPerformed
@@ -471,7 +488,7 @@ public class MainWindow extends javax.swing.JFrame {
     private void transposeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_transposeBtnActionPerformed
         currentImage = transpose(currentImage, jSlider1.getValue());
         imageArray.add(currentImage);
-        photoLabel1.setIcon(new ImageIcon(new ImageIcon(currentImage).getImage().getScaledInstance(photoLabel1.getWidth(), photoLabel1.getHeight(), 1)));
+        photoLabel1.setIcon(new ImageIcon(new ImageIcon(currentImage).getImage().getScaledInstance(photoLabel1.getWidth()-10, photoLabel1.getHeight()-10, 1)));
         photoPanel.revalidate();
         photoLabel1.repaint();        // TODO add your handling code here:
     }//GEN-LAST:event_transposeBtnActionPerformed
@@ -479,7 +496,7 @@ public class MainWindow extends javax.swing.JFrame {
     private void grayscaleBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_grayscaleBtnActionPerformed
         currentImage = grayScale(currentImage);
         imageArray.add(currentImage);
-        photoLabel1.setIcon(new ImageIcon(new ImageIcon(currentImage).getImage().getScaledInstance(photoLabel1.getWidth(), photoLabel1.getHeight(), 1)));
+        photoLabel1.setIcon(new ImageIcon(new ImageIcon(currentImage).getImage().getScaledInstance(photoLabel1.getWidth()-10, photoLabel1.getHeight()-10, 1)));
         photoPanel.revalidate();
         photoLabel1.repaint();        // TODO add your handling code here:
     }//GEN-LAST:event_grayscaleBtnActionPerformed
@@ -487,7 +504,7 @@ public class MainWindow extends javax.swing.JFrame {
     private void transposeBtn1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_transposeBtn1ActionPerformed
         currentImage = verticalFlip(currentImage);
         imageArray.add(currentImage);
-        photoLabel1.setIcon(new ImageIcon(new ImageIcon(currentImage).getImage().getScaledInstance(photoLabel1.getWidth(), photoLabel1.getHeight(), 1)));
+        photoLabel1.setIcon(new ImageIcon(new ImageIcon(currentImage).getImage().getScaledInstance(photoLabel1.getWidth() - 10, photoLabel1.getHeight() - 10, 1)));
         photoPanel.revalidate();
         photoLabel1.repaint();
     }//GEN-LAST:event_transposeBtn1ActionPerformed
@@ -509,11 +526,11 @@ public class MainWindow extends javax.swing.JFrame {
     }//GEN-LAST:event_widthValActionPerformed
 
     private void cropBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cropBtnActionPerformed
-        currentImage = crop(currentImage,Integer.parseInt(xVal.getText()),Integer.parseInt(yVal.getText()),Integer.parseInt(widthVal.getText()),Integer.parseInt(heightVal.getText()));
+        currentImage = crop(currentImage, Integer.parseInt(xVal.getText()), Integer.parseInt(yVal.getText()), Integer.parseInt(widthVal.getText()), Integer.parseInt(heightVal.getText()));
         imageArray.add(currentImage);
-        photoLabel1.setIcon(new ImageIcon(new ImageIcon(currentImage).getImage().getScaledInstance(photoLabel1.getWidth(), photoLabel1.getHeight(), 1)));
+        photoLabel1.setIcon(new ImageIcon(new ImageIcon(currentImage).getImage().getScaledInstance(photoLabel1.getWidth()-10, photoLabel1.getHeight()-10, 1)));
         photoPanel.revalidate();
-        photoLabel1.repaint(); 
+        photoLabel1.repaint();
     }//GEN-LAST:event_cropBtnActionPerformed
 
 //    private ArrayList<User> getUsers(){
@@ -668,20 +685,59 @@ public class MainWindow extends javax.swing.JFrame {
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
                 Color c = new Color(image.getRGB(j, i));
-                raster.setSample(width -1 - j, i, 0, c.getRed());
-                raster.setSample(width -1 - j, i, 1, c.getGreen());
-                raster.setSample(width -1 - j, i, 2, c.getBlue());
+                raster.setSample(width - 1 - j, i, 0, c.getRed());
+                raster.setSample(width - 1 - j, i, 1, c.getGreen());
+                raster.setSample(width - 1 - j, i, 2, c.getBlue());
 
             }
         }
 
         return result;
     }
-    private BufferedImage crop(BufferedImage image,int x, int y, int width, int height){
-        BufferedImage result=image.getSubimage(x, y, width, height);
+
+    private BufferedImage crop(BufferedImage image, int x, int y, int width, int height) {
+        BufferedImage result = image.getSubimage(x, y, width, height);
         return result;
     }
 
+    private BufferedImage contrast(BufferedImage image, float val) {
+        float brightenFactor = val;
+        RescaleOp op = new RescaleOp(brightenFactor, 0, null);
+        BufferedImage result = op.filter(image, image);
+        return result;
+    }
+
+//    public void alterImage() throws IOException {
+//        
+//        brightness = rand.nextInt(150 + 200 + 1) - 200; //values from 150 to 200
+//        contrast = 1.5 + (5.0 - 1.5) * rand.nextDouble(); //values from 1.5 to 5.0
+//
+//        for (int i = 0; i < imageOriginal.getWidth(); i++) {
+//            for (int j = 0; j < imageOriginal.getHeight(); j++) {
+//                Color c = new Color(imageOriginal.getRGB(i, j));
+//                int red = (int) contrast * c.getRed() + brightness;
+//                int green = (int) contrast * c.getGreen() + brightness;
+//                int blue = (int) contrast * c.getBlue() + brightness;
+//
+//                if (red > 255) { // the values of the color components must be between 0-255
+//                    red = 255;
+//                } else if (red < 0) {
+//                    red = 0;
+//                }
+//                if (green > 255) {
+//                    green = 255;
+//                } else if (green < 0) {
+//                    green = 0;
+//                }
+//                if (blue > 255) {
+//                    blue = 255;
+//                } else if (blue < 0) {
+//                    blue = 0;
+//                }
+//                imageAltered.setRGB(i, j, new Color(red, green, blue).getRGB());
+//            }
+//        }
+//    }
     /**
      * @param args the command line arguments
      */
